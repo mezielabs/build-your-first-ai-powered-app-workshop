@@ -69,36 +69,68 @@ app.post("/api/chat", async (req, res) => {
     return res.status(400).json({ error: problem });
   }
 
-  let response;
+  let stream;
   try {
-    response = await client.chat.completions.create({
+    stream = await client.chat.completions.create({
       model: MODEL,
       reasoning_effort: "low",
       max_completion_tokens: 1024,
+      stream: true,
       messages: [
         { role: "system", content: SYSTEM_MESSAGE },
         ...messages.map(({ role, content }) => ({ role, content })),
       ],
     });
   } catch (error) {
+    // Nothing has been sent yet, so a normal JSON error still works here.
     console.error("[chat] Groq request failed:", error.status ?? "", error.message);
     const { status, message } = describeError(error);
     return res.status(status).json({ error: message });
   }
 
-  const choice = response.choices[0];
-  const reply = choice.message.content ?? "";
-  console.log(
-    `[chat] ${messages.length} messages, prompt tokens: ${response.usage?.prompt_tokens}, ` +
-      `completion tokens: ${response.usage?.completion_tokens}`,
-  );
+  // From here on, the response is a stream of NDJSON records:
+  //   {"type":"delta","text":"..."}   a piece of reply text
+  //   {"type":"done"}                 the reply finished normally
+  //   {"type":"error","message":"..."} the reply failed; don't keep it
+  res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8");
+  res.setHeader("Cache-Control", "no-cache");
+  const write = (record) => res.write(JSON.stringify(record) + "\n");
 
-  if (choice.finish_reason !== "stop" || reply.trim() === "") {
-    console.warn(`[chat] unusable reply, finish reason: ${choice.finish_reason}`);
-    return res.status(502).json({ error: "The reply was cut off. Try asking for something shorter." });
+  let text = "";
+  let finishReason = null;
+  let usage = null;
+
+  try {
+    for await (const chunk of stream) {
+      const choice = chunk.choices?.[0];
+      // Only content goes to the browser. Reasoning arrives in a separate field and stays here.
+      const delta = choice?.delta?.content;
+      if (delta) {
+        text += delta;
+        write({ type: "delta", text: delta });
+      }
+      if (choice?.finish_reason) finishReason = choice.finish_reason;
+      usage = chunk.usage ?? chunk.x_groq?.usage ?? usage;
+    }
+  } catch (error) {
+    console.error("[chat] stream failed:", error.message);
+    write({ type: "error", message: "The reply was interrupted. Try again." });
+    return res.end();
   }
 
-  res.json({ reply });
+  console.log(
+    `[chat] ${messages.length} messages, prompt tokens: ${usage?.prompt_tokens}, ` +
+      `completion tokens: ${usage?.completion_tokens}`,
+  );
+
+  // done only when the model stopped normally, some text arrived, and nothing failed.
+  if (finishReason === "stop" && text.trim() !== "") {
+    write({ type: "done" });
+  } else {
+    console.warn(`[chat] unusable reply, finish reason: ${finishReason}`);
+    write({ type: "error", message: "The reply was cut off. Try asking for something shorter." });
+  }
+  res.end();
 });
 
 const port = Number(process.env.PORT ?? 3000);

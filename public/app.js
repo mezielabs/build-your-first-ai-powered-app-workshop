@@ -1,3 +1,5 @@
+import { readRecords } from "./ndjson.js";
+
 const conversation = document.querySelector("#conversation");
 const form = document.querySelector("#composer");
 const input = document.querySelector("#message");
@@ -43,22 +45,41 @@ async function send(text) {
   showError("");
   setBusy(true);
 
+  let reply = "";
+  let done = false;
+  let failure = null;
+
   try {
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ messages: [...history, userTurn] }),
     });
-    const body = await response.json().catch(() => ({}));
     if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
       throw new ChatError(body.error ?? "Something went wrong. Try again.");
     }
 
-    replyBubble.textContent = body.reply;
+    await readRecords(response, (record) => {
+      if (record.type === "delta") {
+        reply += record.text;
+        replyBubble.textContent = reply;
+      } else if (record.type === "done") {
+        done = true;
+      } else if (record.type === "error") {
+        failure = record.message;
+      }
+    });
+
+    // The stream ended. Only a done record means the reply is complete.
+    if (!done) {
+      throw new ChatError(failure ?? "The reply didn't finish. Try again.");
+    }
+
     replyBubble.classList.remove("pending");
 
     // Only now does the exchange join the history.
-    history.push(userTurn, { role: "assistant", content: body.reply });
+    history.push(userTurn, { role: "assistant", content: reply });
   } catch (error) {
     // Roll back: the failed turn never happened.
     userBubble.remove();
