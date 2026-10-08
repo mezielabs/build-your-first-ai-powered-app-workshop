@@ -1,0 +1,19 @@
+{
+  "name": "writing-assistant-workshop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build Your First AI-Powered App: a streaming, multi-turn writing assistant (Mezie Labs live workshop)",
+  "type": "module",
+  "engines": {
+    "node": ">=22.9"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "check": "node --env-file-if-exists=.env scripts/check.js",
+    "first-call": "node --env-file-if-exists=.env examples/first-call.js"
+  },
+  "dependencies": {
+    "express": "5.2.1",
+    "openai": "7.30.1"
+  }
+}
