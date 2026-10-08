@@ -12,8 +12,8 @@ Get all of this working **before the session starts**. There's no setup help dur
 2. **Clone this repo and install dependencies:**
 
    ```bash
-   git clone <REPO_URL>
-   cd writing-assistant-workshop
+   git clone https://github.com/mezielabs/build-your-first-ai-powered-app-workshop.git
+   cd build-your-first-ai-powered-app-workshop
    npm ci
    ```
 
