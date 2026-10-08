@@ -53,7 +53,7 @@ Get all of this working **before the session starts**. There's no setup help dur
 
 1. At each checkpoint, post `DONE` or `HELP: <one-line error>` in Zoom chat.
 2. Paste error text, not screenshots.
-3. Stuck for three minutes? Rejoin from the checkpoint branch and keep building. Bring the problem to the break, the Discord channel or the office hour.
+3. Stuck for three minutes? Rejoin from the checkpoint branch and keep building. Bring the problem to the break, or to the workshop channel on Discord afterwards.
 
 ### Rejoin from a checkpoint
 
