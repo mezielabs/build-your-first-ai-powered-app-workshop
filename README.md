@@ -95,3 +95,15 @@ scripts/check.js       The pre-work check
 
 - Your API key lives only in `.env`, which Git ignores. It never goes into browser code.
 - If your key ever appears on screen or in a chat, delete it at [console.groq.com/keys](https://console.groq.com/keys) and create a new one.
+
+## After the workshop: what's missing before this goes public
+
+You're on the `reference` branch: the finished app. It also cancels the Groq request when the browser closes mid-reply, so you don't pay for tokens nobody reads. Before putting an AI feature like this in front of real users, you'd still need:
+
+- **Saved conversations.** History lives in a browser array, so a refresh loses it.
+- **Trimming long conversations.** Every turn resends everything, so prompt tokens keep growing until you trim or summarise older turns.
+- **Auth and rate limits on `/api/chat`.** Right now anyone who can reach the server can spend your tokens.
+- **A data policy.** Drafts go to a third-party provider. Users should know that.
+- **Monitoring and deployment.** Log errors and token usage somewhere you'll see them.
+
+Questions? Post them in the workshop channel on the [Mezie Labs Discord](https://discord.gg/buTNVnYDAX).
