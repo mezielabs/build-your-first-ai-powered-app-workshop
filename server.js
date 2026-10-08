@@ -69,6 +69,15 @@ app.post("/api/chat", async (req, res) => {
     return res.status(400).json({ error: problem });
   }
 
+  // If the browser goes away mid-reply, stop paying for tokens nobody will read.
+  const controller = new AbortController();
+  res.on("close", () => {
+    if (!res.writableEnded) {
+      console.log("[chat] client disconnected, cancelling the Groq request");
+      controller.abort();
+    }
+  });
+
   let stream;
   try {
     stream = await client.chat.completions.create({
@@ -80,8 +89,9 @@ app.post("/api/chat", async (req, res) => {
         { role: "system", content: SYSTEM_MESSAGE },
         ...messages.map(({ role, content }) => ({ role, content })),
       ],
-    });
+    }, { signal: controller.signal });
   } catch (error) {
+    if (controller.signal.aborted) return;
     // Nothing has been sent yet, so a normal JSON error still works here.
     console.error("[chat] Groq request failed:", error.status ?? "", error.message);
     const { status, message } = describeError(error);
@@ -113,6 +123,7 @@ app.post("/api/chat", async (req, res) => {
       usage = chunk.usage ?? chunk.x_groq?.usage ?? usage;
     }
   } catch (error) {
+    if (controller.signal.aborted) return;
     console.error("[chat] stream failed:", error.message);
     write({ type: "error", message: "The reply was interrupted. Try again." });
     return res.end();
