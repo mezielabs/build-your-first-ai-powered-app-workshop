@@ -1,19 +1,32 @@
 {
   "name": "writing-assistant-workshop",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Build Your First AI-Powered App: a streaming, multi-turn writing assistant (Mezie Labs live workshop)",
+  "description": "Build Your First AI-Powered App: a streaming, multi-turn writing assistant in TypeScript and React (Mezie Labs live workshop)",
   "type": "module",
   "engines": {
-    "node": ">=22.9"
+    "node": ">=22.18"
   },
   "scripts": {
-    "start": "node --env-file-if-exists=.env server.js",
-    "check": "node --env-file-if-exists=.env scripts/check.js",
-    "first-call": "node --env-file-if-exists=.env examples/first-call.js"
+    "dev": "node --watch --env-file=.env server.ts",
+    "check": "node --env-file-if-exists=.env scripts/check.ts",
+    "first-call": "node --env-file-if-exists=.env examples/first-call.ts",
+    "typecheck": "tsc"
   },
   "dependencies": {
     "express": "5.2.1",
-    "openai": "7.30.1"
+    "openai": "7.30.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
   }
 }
