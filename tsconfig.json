@@ -1,0 +1,22 @@
+{
+  // One config for the whole project: the server, the browser code and the scripts.
+  // `npm run typecheck` checks types. Node and Vite run the code; neither checks types.
+  "compilerOptions": {
+    "target": "es2023",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["es2023", "dom", "dom.iterable"],
+    "types": ["node", "vite/client"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+
+    // Node runs .ts files by removing the types, so only use syntax that can simply be erased
+    // (no enums or namespaces), write the .ts extension in imports, and mark type-only imports.
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true
+  },
+  "include": ["server.ts", "vite.config.ts", "shared", "src", "scripts", "examples"]
+}
