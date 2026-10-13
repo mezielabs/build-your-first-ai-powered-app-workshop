@@ -1,6 +1,6 @@
-# Build Your First AI-Powered App
+# Build a Streaming AI Assistant in TypeScript
 
-A Mezie Labs live workshop. In two hours you'll build a writing assistant that streams its replies and remembers the conversation, in TypeScript, with React, Express and a free Groq API key.
+A Mezie Labs live workshop. No Python required: in two hours you'll build a writing assistant that streams its replies and remembers the conversation, in TypeScript, with React, Express and a free Groq API key.
 
 Ask it for a draft, watch the draft arrive word by word, then refine it with follow-ups like "make it shorter" or "more formal".
 
